@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: vellum
+    name: Vellum
     runtime: node
     plan: starter
     buildCommand: npm ci
