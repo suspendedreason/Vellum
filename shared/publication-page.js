@@ -29,7 +29,11 @@ function buildMetaParts(data) {
 }
 
 function buildActions(data, options) {
-  const actions = [];
+  const actions = [
+    `<a href="/">Home</a>`,
+    `<a href="/create">Create</a>`,
+    `<a href="/library">Library</a>`,
+  ];
 
   if (options.includeEditAction && data.slug) {
     actions.push(

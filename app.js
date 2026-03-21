@@ -15,6 +15,8 @@ const {
 const { normalizePublicationDate } = window.VellumPublicationDateUtils;
 const { getDocumentMetadata } = window.VellumDocumentUtils;
 const ACCESS_KEY_STORAGE_KEY = "vellum.accessKey";
+const PORTABLE_STATUS_DEFAULT =
+  "Import a portable Markdown document and annotations sidecar, or export the current draft from the same format.";
 
 const state = {
   text: "",
@@ -70,11 +72,9 @@ const elements = {
   downloadAnnotationsButton: document.getElementById("btn-download-annotations"),
   mergeAnnotationsButton: document.getElementById("btn-merge-annotations"),
   replaceAnnotationsButton: document.getElementById("btn-replace-annotations"),
-  metaAccessKey: document.getElementById("meta-access-key"),
 };
 
 function showWorkspace() {
-  elements.ingestScreen.classList.add("hidden");
   elements.workspace.classList.remove("hidden");
 }
 
@@ -102,15 +102,10 @@ function resetPortableImports() {
 }
 
 function getAccessKey() {
-  return (
-    elements.metaAccessKey.value.trim() || elements.ingestAccessKey.value.trim()
-  );
+  return elements.ingestAccessKey.value.trim();
 }
 
 function syncAccessKeyInputs(value) {
-  if (elements.metaAccessKey.value !== value) {
-    elements.metaAccessKey.value = value;
-  }
   if (elements.ingestAccessKey.value !== value) {
     elements.ingestAccessKey.value = value;
   }
@@ -542,9 +537,7 @@ function applySubmission(data = {}) {
   elements.input.value = safeText;
   state.text = safeText;
   resetPortableImports();
-  setPortableStatus(
-    "Export this draft as Markdown plus a linked annotations sidecar, or import Markdown and annotations back into the editor."
-  );
+  setPortableStatus(PORTABLE_STATUS_DEFAULT);
   syncSelectionFromInput();
   renderAll();
   showWorkspace();
@@ -623,9 +616,7 @@ function applyExtractResult({ markdown, title, url, annotator, author, date }) {
   elements.input.value = markdown || "";
   updateText();
   resetPortableImports();
-  setPortableStatus(
-    "Export this draft as Markdown plus a linked annotations sidecar, or import Markdown and annotations back into the editor."
-  );
+  setPortableStatus(PORTABLE_STATUS_DEFAULT);
   showWorkspace();
 }
 
@@ -1247,7 +1238,7 @@ async function submitDocument() {
 }
 
 function bindEvents() {
-  [elements.ingestAccessKey, elements.metaAccessKey].forEach((element) => {
+  [elements.ingestAccessKey].forEach((element) => {
     element.addEventListener("input", () => {
       setAccessKey(element.value);
     });
@@ -1370,9 +1361,7 @@ function bindEvents() {
     state.nextId = 1;
     elements.noteInput.value = "";
     resetPortableImports();
-    setPortableStatus(
-      "Export this draft as Markdown plus a linked annotations sidecar, or import Markdown and annotations back into the editor."
-    );
+    setPortableStatus(PORTABLE_STATUS_DEFAULT);
     updateText();
   });
   elements.downloadMarkdownButton.addEventListener("click", downloadPortableMarkdown);

@@ -13,14 +13,22 @@
   </head>
   <body>
     <div class="app">
+      <header class="studio-topbar">
+        <a class="studio-brand" href="/">Vellum</a>
+        <nav class="studio-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/create">Create</a>
+          <a href="/library">Library</a>
+        </nav>
+      </header>
       <section class="ingest" id="ingest-screen">
         <div class="ingest-card">
-          <p class="eyebrow">Vellum · URL ingest</p>
-          <h1>Start with a URL, get editable source text back.</h1>
+          <p class="eyebrow">Vellum · Step 1</p>
+          <h1>Load a source before you annotate.</h1>
           <p class="lede">
-            Paste a source link and we’ll extract the main body into editable
-            source text.
-            You can edit anything before annotating.
+            Fetch a page, convert pasted HTML, or import a portable Vellum
+            bundle. You can still edit anything once it reaches the annotation
+            workspace.
           </p>
           <div class="ingest-form">
             <label>
@@ -61,111 +69,11 @@
                 Skip, I’ll paste manually
               </button>
             </div>
-            <div class="selection-info" id="ingest-status">
-              Tip: This uses a lightweight extractor. If the output is messy,
-              just edit the extracted text before annotating.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div id="workspace" class="workspace hidden">
-        <header class="hero">
-        <div>
-          <p class="eyebrow">Vellum · Submission Studio</p>
-          <h1>Paste an essay, highlight text, add notes.</h1>
-          <p class="lede">
-            This tool captures 0-based offsets on your source text and generates a
-            compact annotation bundle you can publish.
-          </p>
-        </div>
-        <div class="hero-panel">
-          <div class="meta-grid">
-            <label>
-              Title
-              <input id="meta-title" type="text" placeholder="Essay title" />
-            </label>
-            <label>
-              Author name
-              <input id="meta-author" type="text" placeholder="Author" />
-            </label>
-            <label>
-              Publication date
-              <input
-                id="meta-date"
-                type="text"
-                inputmode="numeric"
-                placeholder="YYYY, YYYY-MM, or YYYY-MM-DD"
-              />
-            </label>
-            <label>
-              Annotator name
-              <input id="meta-annotator" type="text" placeholder="Annotator" />
-            </label>
-            <label>
-              Source URL
-              <input id="meta-source" type="url" placeholder="https://..." />
-            </label>
-            <label>
-              Access key
-              <input
-                id="meta-access-key"
-                type="password"
-                autocomplete="off"
-                placeholder="Only needed if this server requires one"
-              />
-            </label>
-          </div>
-          <div class="workspace-actions">
-            <div class="selection-info" id="submission-status">
-              Publishing saves the full document and all annotations.
-            </div>
-            <button id="btn-submit" class="primary">Publish</button>
-          </div>
-        </div>
-      </header>
-
-      <main class="grid">
-        <section class="panel annotate-panel">
-          <div class="panel-header">
-            <h2 id="annotation-form-title">New annotation</h2>
-          </div>
-          <div class="annotation-form">
-            <div class="range-box" id="range-box">
-              <div>
-                <span class="range-label">start</span>
-                <span id="range-start">—</span>
-              </div>
-              <div>
-                <span class="range-label">end</span>
-                <span id="range-end">—</span>
-              </div>
-              <div class="range-quote" id="range-quote">No selection yet.</div>
-            </div>
-            <label>
-              Note
-              <textarea
-                id="note-input"
-                rows="5"
-                placeholder="Write your annotation note..."
-              ></textarea>
-            </label>
-            <div class="annotation-actions">
-              <button id="btn-add" class="primary" disabled>
-                Add annotation
-              </button>
-              <button id="btn-delete-annotation" class="ghost hidden">
-                Delete annotation
-              </button>
-              <button id="btn-cancel-edit" class="ghost hidden">
-                Cancel edit
-              </button>
-            </div>
             <section class="portable-tools">
               <h3>Portable import / export</h3>
               <div class="selection-info" id="portable-status">
-                Export this draft as Markdown plus a linked annotations sidecar,
-                or import Markdown and annotations back into the editor.
+                Import a portable Markdown document and annotations sidecar, or
+                export the current draft from the same format.
               </div>
               <label>
                 Portable Markdown (.md)
@@ -223,6 +131,97 @@
                 </button>
               </div>
             </section>
+            <div class="selection-info" id="ingest-status">
+              Tip: This uses a lightweight extractor. If the output is messy,
+              just edit the extracted text before annotating.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="workspace" class="workspace hidden">
+        <header class="hero">
+        <div>
+          <p class="eyebrow">Vellum · Submission Studio</p>
+          <h1>Paste an essay, highlight text, add notes.</h1>
+          <p class="lede">
+            This tool captures 0-based offsets on your source text and generates a
+            compact annotation bundle you can publish.
+          </p>
+        </div>
+        <div class="hero-panel">
+          <div class="meta-grid">
+            <label>
+              Title
+              <input id="meta-title" type="text" placeholder="Essay title" />
+            </label>
+            <label>
+              Author name
+              <input id="meta-author" type="text" placeholder="Author" />
+            </label>
+            <label>
+              Publication date
+              <input
+                id="meta-date"
+                type="text"
+                inputmode="numeric"
+                placeholder="YYYY, YYYY-MM, or YYYY-MM-DD"
+              />
+            </label>
+            <label>
+              Annotator name
+              <input id="meta-annotator" type="text" placeholder="Annotator" />
+            </label>
+            <label>
+              Source URL
+              <input id="meta-source" type="url" placeholder="https://..." />
+            </label>
+          </div>
+          <div class="workspace-actions">
+            <div class="selection-info" id="submission-status">
+              Publishing saves the full document and all annotations.
+            </div>
+            <button id="btn-submit" class="primary">Publish</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="panel annotate-panel">
+          <div class="panel-header">
+            <h2 id="annotation-form-title">New annotation</h2>
+          </div>
+          <div class="annotation-form">
+            <div class="range-box" id="range-box">
+              <div>
+                <span class="range-label">start</span>
+                <span id="range-start">—</span>
+              </div>
+              <div>
+                <span class="range-label">end</span>
+                <span id="range-end">—</span>
+              </div>
+              <div class="range-quote" id="range-quote">No selection yet.</div>
+            </div>
+            <label>
+              Note
+              <textarea
+                id="note-input"
+                rows="5"
+                placeholder="Write your annotation note..."
+              ></textarea>
+            </label>
+            <div class="annotation-actions">
+              <button id="btn-add" class="primary" disabled>
+                Add annotation
+              </button>
+              <button id="btn-delete-annotation" class="ghost hidden">
+                Delete annotation
+              </button>
+              <button id="btn-cancel-edit" class="ghost hidden">
+                Cancel edit
+              </button>
+            </div>
             <div class="annotation-list-wrap">
               <h3>Existing annotations</h3>
               <div class="annotation-list" id="annotation-list"></div>

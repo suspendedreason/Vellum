@@ -85,6 +85,23 @@ test("submit saves sanitized annotations as JSON and renders the publication", a
   });
 });
 
+test("home page and library page render expected navigation", async () => {
+  await withServer(async ({ baseUrl }) => {
+    const homeResponse = await fetch(baseUrl);
+    assert.equal(homeResponse.status, 200);
+    const homeHtml = await homeResponse.text();
+    assert.match(homeHtml, /Create New Annotation/);
+    assert.match(homeHtml, /Open Library/);
+    assert.match(homeHtml, /href="\/create"/);
+    assert.match(homeHtml, /href="\/library"/);
+
+    const libraryResponse = await fetch(`${baseUrl}/library`);
+    assert.equal(libraryResponse.status, 200);
+    const libraryHtml = await libraryResponse.text();
+    assert.match(libraryHtml, /Existing annotations/);
+  });
+});
+
 test("health endpoint responds and saved data files are not publicly exposed", async () => {
   await withServer(async ({ baseUrl, dataDir }) => {
     const healthResponse = await fetch(`${baseUrl}/health`);
@@ -212,6 +229,31 @@ test("edit route bootstraps an existing submission and submit updates the same s
       { start: 17, end: 22, note: "delta" },
     ]);
     assert.ok(saved.updatedAt);
+  });
+});
+
+test("library page lists saved submissions", async () => {
+  await withServer(async ({ baseUrl }) => {
+    const createResponse = await fetch(`${baseUrl}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "Library Essay",
+        annotator: "Tester",
+        text: "Alpha beta gamma",
+        annotations: [{ start: 6, end: 10, note: "beta" }],
+      }),
+    });
+
+    assert.equal(createResponse.status, 200);
+
+    const libraryResponse = await fetch(`${baseUrl}/library`);
+    assert.equal(libraryResponse.status, 200);
+    const html = await libraryResponse.text();
+    assert.match(html, /Library Essay/);
+    assert.match(html, /Annotations<\/strong> 1/);
+    assert.match(html, /href="\/text\/library-essay"/);
+    assert.match(html, /href="\/edit\/library-essay"/);
   });
 });
 

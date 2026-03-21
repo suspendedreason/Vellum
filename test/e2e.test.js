@@ -54,6 +54,9 @@ async function withBrowserHarness(t, options = {}) {
 }
 
 async function skipToWorkspace(page, annotator = "Local Tester") {
+  if (await page.getByRole("link", { name: "Create New Annotation" }).count()) {
+    await page.getByRole("link", { name: "Create New Annotation" }).click();
+  }
   await page.locator("#ingest-annotator").fill(annotator);
   await page.locator("#btn-skip").click();
 }
@@ -110,6 +113,22 @@ test("UI can edit an annotation before publish and save the updated bundle", asy
       },
     ],
   });
+});
+
+test("home page links to the create studio and library", async (t) => {
+  const { harness, page } = await withBrowserHarness(t);
+  await page.goto(harness.url);
+
+  await page.getByRole("link", { name: "Create New Annotation" }).waitFor();
+  await page.getByRole("link", { name: "Open Library" }).waitFor();
+
+  await page.getByRole("link", { name: "Open Library" }).click();
+  await page.waitForURL(/\/library$/);
+  await page.getByRole("heading", { name: "Existing annotations" }).waitFor();
+
+  await page.getByRole("link", { name: "Create", exact: true }).click();
+  await page.waitForURL(/\/create$/);
+  await page.locator("#ingest-screen").waitFor();
 });
 
 test("published documents reopen in the same studio for later annotation edits", async (t) => {
@@ -284,6 +303,7 @@ test("editor can save to an access-key protected server after entering the key",
   });
   await page.goto(harness.url);
 
+  await page.getByRole("link", { name: "Create New Annotation" }).click();
   await page.locator("#ingest-access-key").fill("friend-key");
   await skipToWorkspace(page);
   await page.locator("#meta-title").fill("Protected Draft");

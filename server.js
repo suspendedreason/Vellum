@@ -14,11 +14,13 @@ const {
 } = require("./shared/portable-format");
 const { renderPublicationPage } = require("./shared/publication-page");
 const {
+  listSubmissions,
   readSubmission,
   saveSubmission,
   updateSubmission,
 } = require("./lib/submission-store");
 const { createRateLimiter } = require("./lib/rate-limit");
+const { renderHomePage, renderLibraryPage } = require("./shared/site-pages");
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -196,11 +198,22 @@ function createApp({
   app.get("/health", (req, res) => {
     return res.json({ ok: true });
   });
-  app.get("/", async (req, res) => {
+  app.get("/", (req, res) => {
+    return res.send(renderHomePage());
+  });
+  app.get("/create", async (req, res) => {
     return res.send(await renderStudioPage());
   });
-  app.get("/index.html", async (req, res) => {
-    return res.send(await renderStudioPage());
+  app.get("/index.html", (req, res) => {
+    return res.redirect(302, "/");
+  });
+  app.get("/library", async (req, res) => {
+    try {
+      const submissions = await listSubmissions(dataDir);
+      return res.send(renderLibraryPage(submissions));
+    } catch (error) {
+      return res.status(500).send("Library unavailable.");
+    }
   });
   app.get("/edit/:slug", async (req, res) => {
     try {
