@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+.env
+.env.local
+coverage/
+playwright-report/
+test-results/
+data/*.json
+!data/on-truth-and-lies-in-a-nonmoral-sense.json

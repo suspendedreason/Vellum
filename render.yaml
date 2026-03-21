@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: vellum
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /var/data/vellum
+      - key: TRUST_PROXY
+        value: "true"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: EXTRACT_RATE_LIMIT_MAX
+        value: "20"
+      - key: SUBMIT_RATE_LIMIT_MAX
+        value: "30"
+      - key: VELLUM_ACCESS_KEY
+        sync: false
+    disk:
+      name: vellum-data
+      mountPath: /var/data
+      sizeGB: 1
