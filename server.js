@@ -19,6 +19,7 @@ const {
   saveSubmission,
   updateSubmission,
 } = require("./lib/submission-store");
+const { buildZip } = require("./lib/zip");
 const { createRateLimiter } = require("./lib/rate-limit");
 const { renderHomePage, renderLibraryPage } = require("./shared/site-pages");
 
@@ -343,6 +344,31 @@ function createApp({
         `attachment; filename="${filename}"`
       );
       return res.send(serializePortableAnnotations(data, data.annotations));
+    } catch (error) {
+      return res.status(404).send("Not found.");
+    }
+  });
+
+  app.get("/export/:slug/data", async (req, res) => {
+    try {
+      const data = await readSubmission(dataDir, req.params.slug);
+      const baseName = data.slug || req.params.slug;
+      const zipBuffer = buildZip([
+        {
+          name: `${baseName}.md`,
+          content: serializePortableMarkdown(data),
+        },
+        {
+          name: `${baseName}.annotations.json`,
+          content: serializePortableAnnotations(data, data.annotations),
+        },
+      ]);
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${baseName}-data.zip"`
+      );
+      return res.send(zipBuffer);
     } catch (error) {
       return res.status(404).send("Not found.");
     }

@@ -1,11 +1,35 @@
 const { escapeHtml } = require("./annotation-utils");
 const { renderMarkdownWithAnnotations } = require("./markdown-render");
 
+function getSourcePreview(source) {
+  const raw = String(source || "").trim();
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    const hostname = url.hostname.replace(/^www\./, "");
+    const path = url.pathname.replace(/\/+$/, "") || "/";
+    const trimmedPath =
+      path === "/"
+        ? ""
+        : path.length > 28
+          ? `${path.slice(0, 25)}...`
+          : path;
+
+    return {
+      href: url.toString(),
+      label: trimmedPath ? `${hostname}${trimmedPath}` : hostname,
+    };
+  } catch (error) {
+    return {
+      href: raw,
+      label: raw.length > 40 ? `${raw.slice(0, 37)}...` : raw,
+    };
+  }
+}
+
 function buildMetaParts(data) {
   const metaParts = [];
-  if (data.title) {
-    metaParts.push(`<span><strong>Title</strong> ${escapeHtml(data.title)}</span>`);
-  }
   if (data.author) {
     metaParts.push(
       `<span><strong>Author</strong> ${escapeHtml(data.author)}</span>`
@@ -20,8 +44,13 @@ function buildMetaParts(data) {
     );
   }
   if (data.source) {
+    const preview = getSourcePreview(data.source);
     metaParts.push(
-      `<span><strong>Source</strong> ${escapeHtml(data.source)}</span>`
+      `<span><strong>Source</strong> <a href="${escapeHtml(
+        preview?.href || data.source
+      )}" target="_blank" rel="noreferrer">${escapeHtml(
+        preview?.label || data.source
+      )}</a></span>`
     );
   }
 
@@ -29,11 +58,7 @@ function buildMetaParts(data) {
 }
 
 function buildActions(data, options) {
-  const actions = [
-    `<a href="/">Home</a>`,
-    `<a href="/create">Create</a>`,
-    `<a href="/library">Library</a>`,
-  ];
+  const actions = [`<a href="/">Home</a>`];
 
   if (options.includeEditAction && data.slug) {
     actions.push(
@@ -46,10 +71,7 @@ function buildActions(data, options) {
       `<a href="/export/${escapeHtml(data.slug)}" download>Export HTML</a>`
     );
     actions.push(
-      `<a href="/export/${escapeHtml(data.slug)}/markdown" download>Export Markdown</a>`
-    );
-    actions.push(
-      `<a href="/export/${escapeHtml(data.slug)}/annotations" download>Export annotations JSON</a>`
+      `<a href="/export/${escapeHtml(data.slug)}/data" download>Export Data</a>`
     );
   }
 
@@ -78,9 +100,14 @@ function renderPublicationPage(data, options = {}) {
     <style>
       body { margin: 0; font-family: "IBM Plex Serif", "Georgia", serif; background: #f5f1e8; color: #1b1b1f; }
       .wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+      .page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+      .page-header .brand { font-family: "Space Grotesk", "Avenir Next", sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+      .page-header .brand a { color: #1b1b1f; text-decoration: none; }
       h1 { font-family: "Space Grotesk", "Avenir Next", sans-serif; font-size: 2.6rem; margin: 0 0 10px; }
       .meta { display: flex; flex-wrap: wrap; gap: 10px 18px; color: #5b5b66; font-size: 0.9rem; margin-bottom: 24px; }
       .meta span { display: inline-flex; gap: 6px; }
+      .meta a { color: #b6432a; text-decoration: none; }
+      .meta a:hover { text-decoration: underline; }
       .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
       .actions a { display: inline-flex; align-items: center; border-radius: 999px; padding: 10px 18px; border: 1px solid #ff6a3d; background: #ff6a3d; color: #1b1b1f; text-decoration: none; font-family: "Space Grotesk", "Avenir Next", sans-serif; font-weight: 600; }
       .actions a:hover { background: #d5542f; border-color: #d5542f; color: #fff; }
@@ -101,13 +128,16 @@ function renderPublicationPage(data, options = {}) {
   </head>
   <body>
     <div class="wrap">
+      <header class="page-header">
+        <div class="brand"><a href="/">Vellum</a></div>
+        ${
+          actions.length
+            ? `<div class="actions">${actions.join("")}</div>`
+            : ""
+        }
+      </header>
       <h1>${escapeHtml(data.title || "Untitled")}</h1>
       <div class="meta">${metaParts.join("")}</div>
-      ${
-        actions.length
-          ? `<div class="actions">${actions.join("")}</div>`
-          : ""
-      }
       <div class="text" id="publication">
         ${renderedMarkdown}
         <div class="tooltip" id="tooltip"></div>

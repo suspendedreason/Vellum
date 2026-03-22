@@ -248,9 +248,13 @@ test("published documents expose a standalone html export action", async (t) => 
   await page.getByRole("button", { name: "Publish" }).click();
 
   await page.waitForURL(/\/text\/export-button-check$/);
+  await page.getByRole("link", { name: "Home" }).waitFor();
   const exportLink = page.getByRole("link", { name: "Export HTML" });
   await exportLink.waitFor();
   assert.equal(await exportLink.getAttribute("href"), "/export/export-button-check");
+  const dataLink = page.getByRole("link", { name: "Export Data" });
+  await dataLink.waitFor();
+  assert.equal(await dataLink.getAttribute("href"), "/export/export-button-check/data");
 });
 
 test("editor can export portable markdown and annotations, then import them back", async (t) => {

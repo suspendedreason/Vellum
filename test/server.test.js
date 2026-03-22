@@ -82,6 +82,7 @@ test("submit saves sanitized annotations as JSON and renders the publication", a
     assert.match(html, /data-notes=/);
     assert.match(html, /opening/);
     assert.match(html, /href="\/edit\/audit-essay"/);
+    assert.match(html, /href="\/export\/audit-essay\/data"/);
   });
 });
 
@@ -295,6 +296,31 @@ test("export route downloads a standalone read-only html page", async () => {
   });
 });
 
+test("publication page shows a compact source preview instead of the full raw URL", async () => {
+  await withServer(async ({ baseUrl }) => {
+    const createResponse = await fetch(`${baseUrl}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "Source Preview Essay",
+        source:
+          "https://www.example.com/blog/2026/03/annotated-essay-about-things?utm_source=test",
+        text: "Alpha beta gamma",
+        annotations: [],
+      }),
+    });
+
+    assert.equal(createResponse.status, 200);
+    assert.equal((await createResponse.json()).url, "/text/source-preview-essay");
+
+    const pageResponse = await fetch(`${baseUrl}/text/source-preview-essay`);
+    assert.equal(pageResponse.status, 200);
+    const html = await pageResponse.text();
+    assert.match(html, /<strong>Source<\/strong> <a href="https:\/\/www\.example\.com\/blog\/2026\/03\/annotated-essay-about-things\?utm_source=test"/);
+    assert.match(html, />example\.com\/blog\/2026\/03\/annotated-[^<]*\.\.\.<\/a>/);
+  });
+});
+
 test("portable export routes download Markdown and annotations sidecar files", async () => {
   await withServer(async ({ baseUrl }) => {
     const createResponse = await fetch(`${baseUrl}/submit`, {
@@ -354,6 +380,41 @@ test("portable export routes download Markdown and annotations sidecar files", a
         note: "beta note",
       },
     ]);
+  });
+});
+
+test("export data route downloads a zip containing Markdown and annotations JSON", async () => {
+  await withServer(async ({ baseUrl }) => {
+    const createResponse = await fetch(`${baseUrl}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "Bundle Essay",
+        text: "Alpha beta gamma",
+        annotations: [{ start: 6, end: 10, note: "beta note" }],
+      }),
+    });
+
+    assert.equal(createResponse.status, 200);
+    assert.equal((await createResponse.json()).url, "/text/bundle-essay");
+
+    const exportResponse = await fetch(`${baseUrl}/export/bundle-essay/data`);
+    assert.equal(exportResponse.status, 200);
+    assert.match(
+      exportResponse.headers.get("content-type") || "",
+      /^application\/zip/
+    );
+    assert.match(
+      exportResponse.headers.get("content-disposition") || "",
+      /attachment; filename="bundle-essay-data\.zip"/
+    );
+
+    const zipBuffer = Buffer.from(await exportResponse.arrayBuffer());
+    const zipText = zipBuffer.toString("utf-8");
+    assert.match(zipText, /bundle-essay\.md/);
+    assert.match(zipText, /bundle-essay\.annotations\.json/);
+    assert.match(zipText, /vellum\.markdown\/v1/);
+    assert.match(zipText, /vellum\.annotations\/v1/);
   });
 });
 
